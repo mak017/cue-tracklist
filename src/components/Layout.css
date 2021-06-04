@@ -1,0 +1,13 @@
+.layout {
+  padding: 20px;
+}
+
+.btn-paste-tracklist {
+  display: block;
+  margin: 0 auto 20px;
+}
+
+.paste-tracklist {
+  width: 500px;
+  height: 300px;
+}

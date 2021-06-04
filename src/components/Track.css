@@ -1,0 +1,16 @@
+.track {
+  display: flex;
+  text-align: left;
+}
+
+.track >span {
+  padding: 0 4px;
+}
+
+.track-divider::before {
+  content: "‒";
+}
+
+.track-length {
+  margin-left: auto;
+}
