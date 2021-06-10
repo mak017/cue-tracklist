@@ -33,7 +33,13 @@ const Layout = () => {
           onChange={onTracklistChange}
         ></textarea>
       )}
-      {parsedTracks.length > 0 && <Tracklist tracks={parsedTracks} />}
+      {parsedTracks.length > 0 && (
+        <Tracklist
+          tracks={parsedTracks}
+          setPasteTracklist={setIsPasteTracklist}
+          setParsedTracks={setParsedTracks}
+        />
+      )}
     </div>
   );
 };

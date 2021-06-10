@@ -1,21 +1,70 @@
+import { useRef } from 'react';
+import ContentEditable from 'react-contenteditable';
 import { TrackProps } from '../types';
 import './Track.css';
 
 interface TrackComponentProps extends Omit<TrackProps, 'trackNumber'> {
   trackNumber: string;
+  isPreSaved: boolean;
+  updateTrack: (trackData: TrackProps) => void;
 }
 
-const Track = ({ trackNumber, performer, title, duration }: TrackComponentProps) => {
+const Track = ({
+  trackNumber,
+  performer,
+  title,
+  duration,
+  isPreSaved,
+  updateTrack,
+}: TrackComponentProps) => {
+  const artistRef = useRef(performer || '');
+  const titleRef = useRef(title || '');
+
+  const onChange = (type: 'artist' | 'title', value: string): void => {
+    if (type === 'artist') {
+      artistRef.current = value;
+    } else {
+      titleRef.current = value;
+    }
+  };
+
+  const onBlur = () => {
+    updateTrack({
+      trackNumber: +trackNumber,
+      performer: artistRef.current,
+      title: titleRef.current,
+      duration,
+    });
+  };
+
   return (
     <div className="track">
       <span className="track-number">{trackNumber}.</span>
       {performer && (
         <>
-          <span className="track-artist">{performer}</span>
+          {!isPreSaved ? (
+            <span className="track-artist">{performer}</span>
+          ) : (
+            <ContentEditable
+              html={artistRef.current}
+              tagName="span"
+              onChange={(event) => onChange('artist', event.target.value)}
+              onBlur={onBlur}
+            />
+          )}
           <span className="track-divider"></span>
         </>
       )}
-      <span className="track-title">{title}</span>
+      {!isPreSaved ? (
+        <span className="track-title">{title}</span>
+      ) : (
+        <ContentEditable
+          html={titleRef.current}
+          tagName="span"
+          onChange={(event) => onChange('title', event.target.value)}
+          onBlur={onBlur}
+        />
+      )}
       <span className="track-length">({duration})</span>
     </div>
   );
