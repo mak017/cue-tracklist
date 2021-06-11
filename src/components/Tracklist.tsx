@@ -12,6 +12,7 @@ type TracklistProps = {
 
 const Tracklist = ({ tracks, setPasteTracklist, setParsedTracks }: TracklistProps) => {
   const [isPreSaved, setIsPreSaved] = useState(false);
+  const [isShowTime, setIsShowTime] = useState(false);
   const tracksCount = tracks.length;
   const maxTrackNumberDigits = `${tracks[tracksCount - 1].trackNumber}`.length;
 
@@ -39,8 +40,10 @@ const Tracklist = ({ tracks, setPasteTracklist, setParsedTracks }: TracklistProp
             performer={track.performer}
             title={track.title}
             duration={track.duration}
+            time={track.time}
             key={track.trackNumber}
             isPreSaved={isPreSaved}
+            isShowTime={isShowTime}
             updateTrack={updateTrackByTrackNumber}
           />
         ))}
@@ -48,7 +51,12 @@ const Tracklist = ({ tracks, setPasteTracklist, setParsedTracks }: TracklistProp
           <span>Total playing time:</span>
           <span>{calculateTotalTime(tracks)}</span>
         </div>
-        <button onClick={onPreSave}>Pre-Save</button>
+        <div className="tracklist-buttons">
+          <button onClick={() => setIsShowTime(!isShowTime)}>{`${
+            isShowTime ? 'Hide' : 'Show'
+          } timestamps`}</button>
+          {!isPreSaved && <button onClick={onPreSave}>Pre-Save</button>}
+        </div>
       </div>
     )
   );

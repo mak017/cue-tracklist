@@ -6,6 +6,7 @@ import './Track.css';
 interface TrackComponentProps extends Omit<TrackProps, 'trackNumber'> {
   trackNumber: string;
   isPreSaved: boolean;
+  isShowTime: boolean;
   updateTrack: (trackData: TrackProps) => void;
 }
 
@@ -14,7 +15,9 @@ const Track = ({
   performer,
   title,
   duration,
+  time,
   isPreSaved,
+  isShowTime,
   updateTrack,
 }: TrackComponentProps) => {
   const artistRef = useRef(performer || '');
@@ -39,6 +42,7 @@ const Track = ({
 
   return (
     <div className="track">
+      {isShowTime && <span className="track-time">[{time}]</span>}
       <span className="track-number">{trackNumber}.</span>
       {performer && (
         <>

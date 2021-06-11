@@ -3,4 +3,5 @@ export interface TrackProps {
   performer?: string;
   title: string;
   duration?: string;
+  time?: string;
 }

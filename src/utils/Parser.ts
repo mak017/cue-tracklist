@@ -1,6 +1,7 @@
 // Based on https://github.com/DmitryVarennikov/cuegenerator-react/blob/main/src/Cue/Parser.ts
 
 import { TrackProps } from '../types';
+import { addTime, castTime } from './TimeUtils';
 
 export class ParserHelper {
   // that's how we tell performer and title apart
@@ -57,62 +58,28 @@ export class ParserHelper {
     //                          01.     9999:53 | 999:02:28
     var pattern = !isLength
       ? /^(?:\d{2}\.)?\[?((?:\d{1,3}:)?\d{1,4}:\d{2})\]?.*$/i
-      : /^.*\(?(\d{1,4}:\d{2})\)?/i;
+      : /\(?(\d{1,4}:\d{2})\)?$/i;
     var matches = value.match(pattern);
-    if (matches && matches[1]) {
+    if (!matches) {
+      return { residue: value.trim(), time };
+    }
+    if (!isLength) {
+      if (matches[1]) {
+        time = matches[1].trim();
+        residue = value.substring(value.indexOf(matches[1]) + matches[1].length).trim();
+      } else {
+        residue = value.trim();
+      }
+    } else {
       time = matches[1].trim();
-      residue = !isLength
-        ? value.substring(value.indexOf(matches[1]) + matches[1].length).trim()
-        : value.substring(0, value.indexOf(matches[1])).trim();
-      if (residue.endsWith(' (0')) {
-        residue = residue.substring(0, residue.length - 2).trim();
-      } else if (residue.endsWith(' 0')) {
-        residue = residue.substring(0, residue.length - 1).trim();
-      }
-    } else {
-      residue = value.trim();
+      residue = value.substring(0, value.indexOf(matches[0])).trim();
     }
 
-    return {
-      time: time,
-      residue: residue,
-    };
-  }
-
-  /**
-   * Accept time in format either hr:mn:sc or mn:sc
-   *
-   * @param {String}
-   * @returns mn:sc:fr
-   */
-  castTime(value: string, isLength: boolean = false) {
-    let castTime = !isLength ? '00:00:00' : '00:00';
-    value = value.trim();
-
-    const pattern = /^\d{1,4}:\d{2}:\d{2}$/;
-    const matches = value.match(pattern);
-    if (matches) {
-      const times = value.split(':');
-      const hrParsed = parseInt(times[0], 10);
-      const mnParsed = parseInt(times[1], 10);
-      const sc = times[2].padStart(2, '0');
-      const mn = String(hrParsed * 60 + mnParsed).padStart(2, '0');
-      castTime = !isLength ? `${mn}:${sc}:00` : `${mn}:${sc}`;
-    } else {
-      const pattern = /(^\d{1,4}):(\d{2})$/;
-      const matches = value.match(pattern);
-      if (matches) {
-        const mn = matches[1].padStart(2, '0');
-        const sc = matches[2].padStart(2, '0');
-        castTime = !isLength ? `${mn}:${sc}:00` : `${mn}:${sc}`;
-      }
-    }
-
-    return castTime;
+    return { time, residue };
   }
 
   cleanOffTime(value: string) {
-    var pattern = /^(?:\]? )?(?:\d{2}\)?\.? )?(.*)$/i;
+    var pattern = /^(?:\]? )?(?:\d{1,2}\)?\.? )?(.*)$/i;
     var matches = value.match(pattern);
 
     if (matches && matches[1]) {
@@ -148,9 +115,12 @@ export default class Parser {
     return v.trim();
   }
   parseTrackList(value: string, withTimestamps: boolean, withLength: boolean): Array<TrackProps> {
-    console.log('this :>> ', this);
     const trackList = [];
-    let time, performer, title, duration;
+    let time,
+      performer,
+      title,
+      duration,
+      cumulativeTime = '00:00';
 
     const contentInLines = value.split('\n');
     for (let i = 0, trackNumber = 1; i < contentInLines.length; i++, trackNumber++) {
@@ -164,13 +134,13 @@ export default class Parser {
       if (withTimestamps) {
         if (performerTitle.performer) {
           const timePerformer = this.helper.separateTime(performerTitle.performer);
-          time = withTimestamps ? this.helper.castTime(timePerformer.time) : undefined;
+          time = withTimestamps ? castTime(timePerformer.time) : undefined;
           performer = this.helper.cleanOffTime(timePerformer.residue);
           title = performerTitle.title;
         } else {
           performer = '';
           const timeTitle = this.helper.separateTime(performerTitle.title);
-          time = withTimestamps ? this.helper.castTime(timeTitle.time) : undefined;
+          time = withTimestamps ? castTime(timeTitle.time) : undefined;
           title = this.helper.cleanOffTime(timeTitle.residue);
         }
       } else {
@@ -181,9 +151,10 @@ export default class Parser {
           title = performerTitle.title;
         } else {
           const timeTitle = this.helper.separateTime(performerTitle.title, true);
-          console.log('timeTitle :>> ', timeTitle);
-          duration = this.helper.castTime(timeTitle.time, true);
+          duration = castTime(timeTitle.time, true);
           title = this.helper.cleanOffTime(timeTitle.residue);
+          time = cumulativeTime;
+          cumulativeTime = addTime(cumulativeTime, duration);
         }
       }
 
