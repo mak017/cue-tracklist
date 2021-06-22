@@ -69,7 +69,7 @@ const Track = ({
           onBlur={onBlur}
         />
       )}
-      <span className="track-length">({duration})</span>
+      {duration !== '00:00' && <span className="track-length">({duration})</span>}
     </div>
   );
 };

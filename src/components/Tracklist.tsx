@@ -15,6 +15,8 @@ const Tracklist = ({ tracks, setPasteTracklist, setParsedTracks }: TracklistProp
   const [isShowTime, setIsShowTime] = useState(false);
   const tracksCount = tracks.length;
   const maxTrackNumberDigits = `${tracks[tracksCount - 1].trackNumber}`.length;
+  const totalTime = calculateTotalTime(tracks);
+  const isShowTotalTime = totalTime !== '00:00';
 
   const onPreSave = () => {
     setPasteTracklist(false);
@@ -47,14 +49,18 @@ const Tracklist = ({ tracks, setPasteTracklist, setParsedTracks }: TracklistProp
             updateTrack={updateTrackByTrackNumber}
           />
         ))}
-        <div className="tracklist-footer">
-          <span>Total playing time:</span>
-          <span>{calculateTotalTime(tracks)}</span>
-        </div>
+        {isShowTotalTime && (
+          <div className="tracklist-footer">
+            <span>Total playing time:</span>
+            <span>{totalTime}</span>
+          </div>
+        )}
         <div className="tracklist-buttons">
-          <button onClick={() => setIsShowTime(!isShowTime)}>{`${
-            isShowTime ? 'Hide' : 'Show'
-          } timestamps`}</button>
+          {isShowTotalTime && (
+            <button onClick={() => setIsShowTime(!isShowTime)}>{`${
+              isShowTime ? 'Hide' : 'Show'
+            } timestamps`}</button>
+          )}
           {!isPreSaved && <button onClick={onPreSave}>Pre-Save</button>}
         </div>
       </div>
