@@ -31,7 +31,7 @@ export const castTime = (value: string, isLength: boolean = false) => {
     const mn = String(hrParsed * 60 + mnParsed).padStart(2, '0');
     castTime = !isLength ? `${mn}:${sc}:00` : `${mn}:${sc}`;
   } else {
-    const pattern = /(^\d{1,4}):(\d{2})$/;
+    const pattern = /(^\d{1,4}):(\d{1,2})$/;
     const matches = value.match(pattern);
     if (matches) {
       const mn = matches[1].padStart(2, '0');
